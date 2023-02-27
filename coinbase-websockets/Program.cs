@@ -4,14 +4,18 @@ class Program
 {
     static async Task Main()
     {
-        PricingData pricingData = new PricingData();
+        var firstCoinName = "bitcoin";
+        var secondCoinName = "solana";
+        var initialGBPFunds = 1000;
+        var initialSecondCoinFunds = 1000;
 
-        var firstCoinRequestUrl = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=gbp&days=365&interval=daily";
-        var secondCoinRequestUrl = "https://api.coingecko.com/api/v3/coins/matic-network/market_chart?vs_currency=gbp&days=365&interval=daily";
+        var firstCoinRequestUrl = $"https://api.coingecko.com/api/v3/coins/{firstCoinName}/market_chart?vs_currency=gbp&days=365&interval=daily";
+        var secondCoinRequestUrl = $"https://api.coingecko.com/api/v3/coins/{secondCoinName}/market_chart?vs_currency=gbp&days=365&interval=daily";
 
-        var pairPricingDictionary = await pricingData.GetPriceComparisonDictionary("bitcoin", "matic-network", firstCoinRequestUrl, secondCoinRequestUrl);
+        PricingData pricingData = new PricingData(firstCoinName, secondCoinName, firstCoinRequestUrl, secondCoinRequestUrl);
+        var pairPricingDictionary = await pricingData.GetPriceComparisonDictionary();
 
-        HistoricalPerformance historicalPerformance = new HistoricalPerformance();
-        historicalPerformance.getStrategyPerformance("bitcoin", "matic-network", pairPricingDictionary);
+        HistoricalPerformance historicalPerformance = new HistoricalPerformance(initialSecondCoinFunds, initialGBPFunds, firstCoinName, secondCoinName);
+        historicalPerformance.GetStrategyPerformance(pairPricingDictionary);
     }
 }
