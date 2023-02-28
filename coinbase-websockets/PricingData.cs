@@ -4,26 +4,26 @@ namespace backtesting
 {
     public class PricingData
     {
-        private readonly string _firstCoinName;
-        private readonly string _secondCoinName;
-        private readonly string _firstCoinRequestUrl;
-        private readonly string _secondCoinRequestUrl;
-        public PricingData(string firstCoinName, string secondCoinName, string firstCoinRequesUrl, string secondCoinRequesUrl)
+        private readonly string _indicatorCoinName;
+        private readonly string _trailingCoinName;
+        private readonly string _indicatorCoinRequestUrl;
+        private readonly string _trailingCoinRequestUrl;
+        public PricingData(string indicatorCoinName, string trailingCoinName, string indicatorCoinRequesUrl, string trailingCoinRequesUrl)
         {
-            _firstCoinName = firstCoinName;
-            _secondCoinName = secondCoinName;
-            _firstCoinRequestUrl = firstCoinRequesUrl;
-            _secondCoinRequestUrl = secondCoinRequesUrl;
+            _indicatorCoinName = indicatorCoinName;
+            _trailingCoinName = trailingCoinName;
+            _indicatorCoinRequestUrl = indicatorCoinRequesUrl;
+            _trailingCoinRequestUrl = trailingCoinRequesUrl;
         }
         public async Task<Dictionary<string, float[]>> GetPriceComparisonDictionary()
         {
-            var firstCoinPrices = await getCoinPrices(_firstCoinRequestUrl);
-            var secondCoinPrices = await getCoinPrices(_secondCoinRequestUrl);
+            var indicatorCoinPrices = await getCoinPrices(_indicatorCoinRequestUrl);
+            var trailingCoinPrices = await getCoinPrices(_trailingCoinRequestUrl);
 
             var pairPricingDictionary = new Dictionary<string, float[]>
             {
-                { $"{_firstCoinName} prices", firstCoinPrices },
-                { $"{_secondCoinName} prices", secondCoinPrices }
+                { $"{_indicatorCoinName} prices", indicatorCoinPrices },
+                { $"{_trailingCoinName} prices", trailingCoinPrices }
             };
 
             return pairPricingDictionary;
@@ -37,9 +37,9 @@ namespace backtesting
 
             coinPriceDataResponse.EnsureSuccessStatusCode();
 
-            string responseForFirstCoinPriceDataContent = await coinPriceDataResponse.Content.ReadAsStringAsync();
+            string responseForIndicatorCoinPriceDataContent = await coinPriceDataResponse.Content.ReadAsStringAsync();
 
-            var coinJsonObject = JObject.Parse(responseForFirstCoinPriceDataContent);
+            var coinJsonObject = JObject.Parse(responseForIndicatorCoinPriceDataContent);
             var coinPriceDictionary = coinJsonObject.ToObject<Dictionary<string, object[][]>>();
 
             return coinPriceDictionary["prices"].Select(x => Convert.ToSingle(x[1])).ToArray();
