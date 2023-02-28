@@ -28,14 +28,15 @@
        {
             for (int dayIndex = 1; dayIndex < pairPricingDictionary[$"{_indicatorCoinName} prices"].Length; dayIndex++)
             {
-                Console.WriteLine($"{_gbpFunds }, {_trailingCoinFunds}");
                 float currentDayIndicatorCoinPrice = pairPricingDictionary[$"{_indicatorCoinName} prices"][dayIndex];
                 float yesterdayIndicatorCoinPrice = pairPricingDictionary[$"{_indicatorCoinName} prices"][dayIndex - 1];
                 float IndicatorCoinPriceIncrease = currentDayIndicatorCoinPrice / yesterdayIndicatorCoinPrice;
+
                 if (IndicatorCoinPriceIncrease > 1.02)
                 {
                     placeTheoreritcalBuyOrder(pairPricingDictionary, dayIndex);
                 }
+
                 if (IndicatorCoinPriceIncrease < 0.98)
                 {
                     placeTheoreritcalSellOrder(pairPricingDictionary, dayIndex);
@@ -46,16 +47,20 @@
         private void placeTheoreritcalBuyOrder(Dictionary<string, float[]> pairPricingDictionary, int currentDayIndex)
         {
             _gbpFunds -= 1;
+
             float currentDaytrailingCoinPrice = pairPricingDictionary[$"{_trailingCoinName} prices"][currentDayIndex];
             float trailingCoinQuanityPurchased = 1 / currentDaytrailingCoinPrice;
+
             _trailingCoinFunds += trailingCoinQuanityPurchased;
         }
 
         private void placeTheoreritcalSellOrder(Dictionary<string, float[]> pairPricingDictionary, int currentDayIndex)
         {
             _gbpFunds += 1;
+
             float currentDaytrailingCoinPrice = pairPricingDictionary[$"{_trailingCoinName} prices"][currentDayIndex];
             float trailingCoinQuanitySold = 1 / currentDaytrailingCoinPrice;
+
             _trailingCoinFunds -= trailingCoinQuanitySold;
         }
     }
