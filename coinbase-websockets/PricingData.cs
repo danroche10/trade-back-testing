@@ -8,19 +8,22 @@ namespace backtesting
         private readonly string _trailingCoinName;
         private readonly string _indicatorCoinRequestUrl;
         private readonly string _trailingCoinRequestUrl;
+        private readonly HttpClient _httpClient;
+
         public PricingData(string indicatorCoinName, string trailingCoinName, string indicatorCoinRequesUrl, string trailingCoinRequesUrl)
         {
             _indicatorCoinName = indicatorCoinName;
             _trailingCoinName = trailingCoinName;
             _indicatorCoinRequestUrl = indicatorCoinRequesUrl;
             _trailingCoinRequestUrl = trailingCoinRequesUrl;
+            _httpClient = new HttpClient();
         }
         public async Task<Dictionary<string, float[]>> GetPriceComparisonDictionary()
         {
-            var indicatorCoinPrices = await getCoinPrices(_indicatorCoinRequestUrl);
-            var trailingCoinPrices = await getCoinPrices(_trailingCoinRequestUrl);
+            float[] indicatorCoinPrices = await getCoinPrices(_indicatorCoinRequestUrl);
+            float[] trailingCoinPrices = await getCoinPrices(_trailingCoinRequestUrl);
 
-            var pairPricingDictionary = new Dictionary<string, float[]>
+            Dictionary<string, float[]> pairPricingDictionary = new Dictionary<string, float[]>
             {
                 { $"{_indicatorCoinName} prices", indicatorCoinPrices },
                 { $"{_trailingCoinName} prices", trailingCoinPrices }
@@ -31,18 +34,24 @@ namespace backtesting
 
         private async Task<float[]> getCoinPrices(string requestUrl)
         {
-            HttpClient client = new HttpClient();
+            string responseForIndicatorCoinPriceDataContent = await getPriceDataContent(requestUrl);
 
-            HttpResponseMessage coinPriceDataResponse = await client.GetAsync(requestUrl);
+            JObject coinJsonObject = JObject.Parse(responseForIndicatorCoinPriceDataContent);
+
+            Dictionary<string, object[][]>? coinPriceDictionary = coinJsonObject.ToObject<Dictionary<string, object[][]>>();
+
+            return coinPriceDictionary["prices"].Select(x => Convert.ToSingle(x[1])).ToArray();
+        }
+
+        private async Task<string> getPriceDataContent(string requestUrl)
+        {
+            HttpResponseMessage coinPriceDataResponse = await _httpClient.GetAsync(requestUrl);
 
             coinPriceDataResponse.EnsureSuccessStatusCode();
 
             string responseForIndicatorCoinPriceDataContent = await coinPriceDataResponse.Content.ReadAsStringAsync();
 
-            var coinJsonObject = JObject.Parse(responseForIndicatorCoinPriceDataContent);
-            var coinPriceDictionary = coinJsonObject.ToObject<Dictionary<string, object[][]>>();
-
-            return coinPriceDictionary["prices"].Select(x => Convert.ToSingle(x[1])).ToArray();
+            return responseForIndicatorCoinPriceDataContent;
         }
     }
 }
